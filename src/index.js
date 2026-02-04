@@ -48,6 +48,7 @@ function preload() {
     frameHeight: 48
   });
   this.load.image("img_etoile", "src/assets/star.png");
+  this.load.image("img_bombe", "src/assets/bomb.png");
 }
 
 /***********************************************************************/
@@ -103,6 +104,20 @@ function create() {
       groupe_etoiles.create(coordX, 10, "img_etoile");
     }
   this.physics.add.collider(groupe_etoiles, groupe_plateformes) ; 
+
+  groupe_etoiles.children.iterate(function iterateur(etoile_i) {
+    var coef_rebond = Phaser.Math.FloatBetween(0.4,0.8) ;
+    etoile_i.setBounceY(coef_rebond) ;
+    });  
+  
+  this.physics.add.overlap(player,groupe_etoiles,ramasserEtoile,null,this);
+
+  zone_texte_score = this.add.text(16,16,'score: 0',{ fontSize :'32px',fill: '#000'}); 
+
+  groupe_bombes = this.physics.add.group(); 
+  this.physics.add.collider(groupe_bombes, groupe_plateformes); 
+
+  this.physics.add.collider(player, groupe_bombes, chocAvecBombe, null, this) ;  
   }
 
 
@@ -128,9 +143,47 @@ function update() {
     player.setVelocityY(-330);
   }
 
+  if (gameOver) {
+        return;
+    }
 }
+
+function ramasserEtoile(un_player, une_etoile) {
+  une_etoile.disableBody(true,true);
+  if (groupe_etoiles.countActive(true) == 0) {
+    groupe_etoiles.children.iterate(function iterateur(etoile_i) {
+      etoile_i.enableBody(true, etoile_i.x, 0, true, true);
+    });
+  }
+  score += 10; ;
+  zone_texte_score.setText("Score:"+ score);
+
+  var x;
+  if(player.x<400){
+    x=Phaser.Math.Between(400,800);
+  }else{
+    x=Phaser.Math.Between(0,400);
+  }
+
+  var une_bombe = groupe_bombes.create(x,16,"img_bombe");
+  une_bombe.setBounce(1);
+  une_bombe.setCollideWorldBounds(true);
+  une_bombe.setVelocity(Phaser.Math.Between(-200,200),20);
+  une_bombe.allowGravity = false;
+}
+
+function chocAvecBombe(un_player,une_bombe) {
+  this.physics.pause();
+  player.setTint(0xff0000);
+  player.anims.play("anim_face") ;
+  gameOver = true;
+} 
 
 var groupe_plateformes;
 var player;  // désigne le sprite du joueur 
 var clavier;
 var groupe_etoiles;
+var score = 0 ;
+var zone_texte_score; 
+var groupe_bombes;  
+var gameOver = false; 
