@@ -139,8 +139,19 @@ function update() {
 
   }
 
-  if (clavier.space.isDown && player.body.touching.down) {
+  if (player.body.touching.down) {
+    Compteur_saut = 0;
+    espace_precedent = false;
+  }
+  
+  if (clavier.space.isDown && !espace_precedent && Compteur_saut < 2) {
     player.setVelocityY(-330);
+    Compteur_saut++;
+    espace_precedent = true;
+  }
+  
+  if (!clavier.space.isDown) {
+    espace_precedent = false;
   }
 
   if (gameOver) {
@@ -187,3 +198,5 @@ var score = 0 ;
 var zone_texte_score; 
 var groupe_bombes;  
 var gameOver = false; 
+var Compteur_saut = 0;
+var espace_precedent = false;
